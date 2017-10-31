@@ -5,15 +5,14 @@ import org.la4j.Vector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Hello world!
  */
-public class ComplexApp {
+public class App {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(ComplexApp.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(App.class);
 
     private static int numberOfEpochs = 100000;
     private static double learningRate = 0.1;
@@ -21,31 +20,31 @@ public class ComplexApp {
     private static int networkSize = 4;
     private static int numberOfSignals = 4;
     private static int numberOfOutputs = 2;
-    private static SampleItem[] trainingSample = new SampleItem[]{
-        new SampleItem().setSignals(0, 0, 0, 0).setExpectedResult(0, 0),
-        new SampleItem().setSignals(0, 0, 0, 1).setExpectedResult(0, 1),
-        new SampleItem().setSignals(0, 0, 1, 0).setExpectedResult(0, 0),
-        new SampleItem().setSignals(1, 0, 0, 1).setExpectedResult(1, 1),
-        new SampleItem().setSignals(1, 0, 0, 0).setExpectedResult(1, 0),
-        new SampleItem().setSignals(1, 0, 0, 1).setExpectedResult(1, 1),
-        new SampleItem().setSignals(1, 0, 1, 0).setExpectedResult(1, 0),
-        new SampleItem().setSignals(1, 1, 1, 1).setExpectedResult(1, 1)
+    private static Sample[] trainingSample = new Sample[]{
+        new Sample().setInputs(0, 0, 0, 0).setResults(0, 0),
+        new Sample().setInputs(0, 0, 0, 1).setResults(0, 1),
+        new Sample().setInputs(0, 0, 1, 0).setResults(0, 0),
+        new Sample().setInputs(1, 0, 0, 1).setResults(1, 1),
+        new Sample().setInputs(1, 0, 0, 0).setResults(1, 0),
+        new Sample().setInputs(1, 0, 0, 1).setResults(1, 1),
+        new Sample().setInputs(1, 0, 1, 0).setResults(1, 0),
+        new Sample().setInputs(1, 1, 1, 1).setResults(1, 1)
     };
 
-    private static SampleItem[] testSample = new SampleItem[]{
-        new SampleItem().setSignals(1, 0, 0, 0),
-        new SampleItem().setSignals(1, 0, 0, 1),
-        new SampleItem().setSignals(1, 0, 1, 0),
-        new SampleItem().setSignals(1, 0, 1, 1),
-        new SampleItem().setSignals(1, 1, 0, 0),
-        new SampleItem().setSignals(1, 1, 0, 1),
-        new SampleItem().setSignals(1, 1, 1, 0),
-        new SampleItem().setSignals(1, 1, 1, 1)
+    private static Sample[] testSample = new Sample[]{
+        new Sample().setInputs(1, 0, 0, 0),
+        new Sample().setInputs(1, 0, 0, 1),
+        new Sample().setInputs(1, 0, 1, 0),
+        new Sample().setInputs(1, 0, 1, 1),
+        new Sample().setInputs(1, 1, 0, 0),
+        new Sample().setInputs(1, 1, 0, 1),
+        new Sample().setInputs(1, 1, 1, 0),
+        new Sample().setInputs(1, 1, 1, 1)
     };
 
     public static void main(String[] args) {
 
-        ComplexNetwork network = new ComplexNetwork(networkSize, learningRate, numberOfSignals, numberOfOutputs);
+        Network network = new Network(networkSize, learningRate, numberOfSignals, numberOfOutputs);
 
         LOGGER.info("Training started.");
         LOGGER.info("Network parameters - size={}, learningRate={}", networkSize, learningRate);
@@ -55,14 +54,14 @@ public class ComplexApp {
 
         int logInterval = numberOfEpochs / 10;
         for (int i = 0; i < numberOfEpochs; i++) {
-            for (SampleItem sampleItem : trainingSample) {
-                network.train(sampleItem);
+            for (Sample sample : trainingSample) {
+                network.train(sample);
             }
             if (i % logInterval == 0 || i == numberOfEpochs - 1) {
                 double evaluation = 0;
-                for (SampleItem sampleItem : trainingSample) {
-                    Vector prediction = network.predict(sampleItem.getSignals());
-                    evaluation += evaluateQuality(prediction, sampleItem.getExpectedResult());
+                for (Sample sample : trainingSample) {
+                    Vector prediction = network.predict(sample.getInputs());
+                    evaluation += evaluateQuality(prediction, sample.getResults());
                 }
                 evaluation = evaluation / trainingSample.length;
                 LOGGER.info("Processed {}%, training loss is {}", i * 100 / numberOfEpochs, String.format("%.3f", evaluation));
@@ -73,11 +72,11 @@ public class ComplexApp {
         LOGGER.info("Training completed. Time spent: {} ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
 
 
-        for (SampleItem sampleItem : testSample) {
+        for (Sample sample : testSample) {
             System.out.print("For input [");
-            sampleItem.getSignals().forEach((value) -> System.out.print(String.format("%.0f, ", value)));
+            sample.getInputs().forEach((value) -> System.out.print(String.format("%.0f, ", value)));
             System.out.print("]");
-            Vector result = network.predict(sampleItem.getSignals());
+            Vector result = network.predict(sample.getInputs());
 
             System.out.print("result is [");
             result.forEach((value) -> System.out.print(String.format("%.2f, ", value)));
