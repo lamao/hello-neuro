@@ -5,6 +5,7 @@ import org.la4j.Vector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -12,12 +13,10 @@ import java.util.concurrent.TimeUnit;
  */
 public class App {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(App.class);
-
-    private static int numberOfEpochs = 100000;
+    private static int numberOfEpochs = 10000;
     private static double learningRate = 0.1;
 
-    private static int networkSize = 4;
+    private static int networkSize = 5;
     private static int numberOfSignals = 4;
     private static int numberOfOutputs = 2;
     private static Sample[] trainingSample = new Sample[]{
@@ -46,9 +45,9 @@ public class App {
 
         Network network = new Network(networkSize, learningRate, numberOfSignals, numberOfOutputs);
 
-        LOGGER.info("Training started.");
-        LOGGER.info("Network parameters - size={}, learningRate={}", networkSize, learningRate);
-        LOGGER.info("Number of epochs to teach: {}", numberOfEpochs);
+        System.out.println("Training started");
+        System.out.println(String.format("Network parameters - size=%d, learningRate=%.3f", networkSize, learningRate));
+        System.out.println(String.format("Number of epochs to teach: %d", numberOfEpochs));
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
 
@@ -57,6 +56,7 @@ public class App {
             for (Sample sample : trainingSample) {
                 network.train(sample);
             }
+//            network.mutate();
             if (i % logInterval == 0 || i == numberOfEpochs - 1) {
                 double evaluation = 0;
                 for (Sample sample : trainingSample) {
@@ -64,12 +64,14 @@ public class App {
                     evaluation += evaluateQuality(prediction, sample.getResults());
                 }
                 evaluation = evaluation / trainingSample.length;
-                LOGGER.info("Processed {}%, training loss is {}", i * 100 / numberOfEpochs, String.format("%.3f", evaluation));
+                System.out.println(String.format("Processed %d%%, training loss is %.3f", i * 100 / numberOfEpochs, evaluation));
 
             }
         }
         stopWatch.stop();
-        LOGGER.info("Training completed. Time spent: {} ms", stopWatch.getTime(TimeUnit.MILLISECONDS));
+//        System.out.println("Generated random was " + Arrays.toString(network.series));
+//        System.out.println("Generated " + network.total + " times");
+        System.out.println(String.format("Training completed. Time spent: %d ms", stopWatch.getTime(TimeUnit.MILLISECONDS)));
 
 
         for (Sample sample : testSample) {
